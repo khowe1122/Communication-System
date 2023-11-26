@@ -1,0 +1,74 @@
+# Robot Communication 
+
+function findavailablestation():
+    availablestation = getavailablestationlist()
+    if availablestation is not empty:
+        return selectstation(availablestation)
+    else:
+        return null  # No available station 
+
+function establishcommunication(robot, station):
+    if station is not null:
+        sendchargingrequest(robot, station)
+        response = waitresponse(station)
+        if response is successful:
+            exchangehandshake(robot, station)
+            startrealtimecommunication(robot, station)
+        else:
+            handlecommunicationerror()
+
+function exchangehandshake(robot, station):
+    handshakeMessage = createhandshakemessage()
+    send(handshakemessage, robot, station)
+        response = waitresponse(station)
+    if response is successful:
+        return true  # Handshake successful
+    else:
+        handlehandshakeerror()
+
+function startrealtimecommunication(robot, station):
+    while sessionnotconcluded():
+        realtimemessage = createrealtimemessage()
+        send(realtimemessage, robot, station)
+        waitinterval()
+
+function finishSession(robot, station):
+    concluderealtimecommunication(robot, station)
+    sendsessioncomplete(robot, station)
+    waitforresponse(station)
+    makestationavailable(station)
+
+# Station Communication Process
+
+function receiverobotcommunication():
+    chargingrequest = receivechargingrequest()
+    robot = chargingrequest.getrobot()
+    return robot
+
+function handshakeverification(robot, station):
+    receivedhandshake = waithandshake(robot, station)
+    if verifyhandshake(receivedhandshake):
+        sendresponse(success, station)
+        return true
+    else:
+        sendresponse(fail, station)
+        return false
+
+function continuousrealtimecommunication(robot, station):
+    while sessionnotcomplete():
+        receivedmessage = waitrealtimemessage(robot, station)
+        processrealtimemessage(receivedmessage)
+        sendresponse(success, station)
+
+function sessiondone(robot, station):
+    waitsessiondone(robot, station)
+    sendresponse(success, robot)
+
+# Main Program
+
+robot = findavailablestation()
+if robot is not null:
+    establishcommunication(robot, station)
+    finish(robot, station)
+else:
+    waitnextiteration()

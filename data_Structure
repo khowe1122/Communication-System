@@ -1,0 +1,69 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_PAYLOAD_SIZE 50
+
+//frame control field based on the 802.15.4 standard.
+struct FrameControl {
+    uint16_t frameType : 3;
+    uint16_t securityEnabled : 1;
+    uint16_t framePending : 1;
+    uint16_t ackRequest : 1;
+    uint16_t panIDCompression : 1;
+    uint16_t reserved : 3;
+    uint16_t destinationMode : 2;
+    uint16_t frameVersion : 2;
+};
+
+//  header of an 802.15.4 frame
+struct FrameHeader {
+    struct FrameControl frameControl;
+    uint16_t sequenceNumber;
+    uint16_t destPanID;
+    uint64_t destAddr;
+    uint16_t srcPanID;
+    uint64_t srcAddr;
+};
+
+//  message structure for real-time communication
+struct RealTimeMessage {
+    struct FrameHeader header;
+    char payload[MAX_PAYLOAD_SIZE];  // Use an array for message payload
+};
+
+// send a message 
+void send_message(const struct RealTimeMessage *message) {
+    // Simulated send function
+    printf("Sending message with payload: %s\n", message->payload);
+}
+
+// receive message 
+struct RealTimeMessage receive_message() {
+    // Simulated receive function
+    struct RealTimeMessage receivedMessage;
+    // Populate received message with the received data
+    strcpy(receivedMessage.payload, "Hello from MCU B");
+    return receivedMessage;
+}
+
+int main() {
+    // realtimemessage structure
+    struct RealTimeMessage message;
+    message.header.frameControl.frameType = 0x01;  // Example frame type
+    message.header.sequenceNumber = 0x1234;        // Example sequence number
+    message.header.destPanID = 0xABCD;             // Example destination PAN ID
+    message.header.destAddr = 0x1122334455667788; // Example destination address
+    message.header.srcPanID = 0x1234;              // Example source PAN ID
+    message.header.srcAddr = 0x8877665544332211;   // Example source address
+    strcpy(message.payload, "Hello from MCU A");
+
+    // Send message
+    send_message(&message);
+
+    // Receive a message
+    struct RealTimeMessage receivedMessage = receive_message();
+    printf("Received message with payload: %s\n", receivedMessage.payload);
+
+    return 0;
+}
